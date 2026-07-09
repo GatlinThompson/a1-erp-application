@@ -1,0 +1,33 @@
+enum ProductType {
+  HARDWARE
+  PART
+  KIT
+  SHIPPING_KIT
+  MATERIAL
+}
+
+model Product {
+  id        Int         @id @default(autoincrement())
+  name      String
+  sku       String      @unique
+  quantity_on_hand  Int         @default(0)
+  reorder_point      Int         @default(0)
+  price     Float
+  type      ProductType
+  hardwares  ProductHardware[]
+  parts      ProductPart[]
+}
+
+model ProductHardware {
+  id        Int     @id @default(autoincrement())
+  product   Product @relation(fields: [productId], references: [id])
+  productId Int     @unique
+  quantity  Int     @default(1)
+}
+
+model ProductPart {
+  id        Int     @id @default(autoincrement())
+  product   Product @relation(fields: [productId], references: [id])
+  productId Int
+  quantity  Int     @default(1)
+}
