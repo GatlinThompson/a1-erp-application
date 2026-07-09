@@ -4,6 +4,8 @@ enum ProductType {
   KIT
   SHIPPING_KIT
   MATERIAL
+  HARDWARE_KIT
+  @@schema("public")
 }
 
 model Product {
@@ -16,6 +18,7 @@ model Product {
   type      ProductType
   hardwares  ProductHardware[]
   parts      ProductPart[]
+  @@schema("public")
 }
 
 model ProductHardware {
@@ -23,6 +26,7 @@ model ProductHardware {
   product   Product @relation(fields: [productId], references: [id])
   productId Int     @unique
   quantity  Int     @default(1)
+  @@schema("public")
 }
 
 model ProductPart {
@@ -30,4 +34,5 @@ model ProductPart {
   product   Product @relation(fields: [productId], references: [id])
   productId Int
   quantity  Int     @default(1)
+  @@schema("public")
 }
