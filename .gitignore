@@ -43,9 +43,10 @@ next-env.d.ts
 
 # server
 node_modules
+
 # Keep environment variables out of version control
 .env
 
-generated/prisma
+/server/generated/prisma
 
 .claude
