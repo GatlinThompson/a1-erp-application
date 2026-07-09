@@ -1,0 +1,3 @@
+-- AlterTable
+ALTER TABLE "Product" ALTER COLUMN "name" DROP NOT NULL,
+ALTER COLUMN "price" SET DEFAULT 0.00;

@@ -1,0 +1,59 @@
+enum ProductType {
+  HARDWARE
+  PART
+  KIT
+  SHIPPING_KIT
+  MATERIAL
+  HARDWARE_KIT
+  @@schema("public")
+}
+
+model Product {
+  id        Int         @id @default(autoincrement())
+  name      String?      
+  sku       String      @unique
+  quantity_on_hand  Int         @default(0)
+  reorder_point      Int         @default(0)
+  price     Float  @default(0.00)
+  type      ProductType
+  hardwares  ProductHardware[]     @relation("ProductHardwares")
+  usedInHardwares ProductHardware[] @relation("HardwareUsedIn")
+  parts      ProductPart[]        @relation("ProductParts")
+  usedInParts ProductPart[]       @relation("PartUsedIn")
+  hardware_kits ProductHardwareKit[] @relation("ProductHardwareKits")
+  usedInHardwareKits ProductHardwareKit[] @relation("HardwareKitUsedIn")
+  @@schema("public")
+}
+
+model ProductHardware {
+  id        Int     @id @default(autoincrement())
+  product   Product @relation("ProductHardwares", fields: [productId], references: [id])
+  productId Int
+  hardware  Product @relation("HardwareUsedIn", fields: [hardwareId], references: [id])
+  hardwareId Int
+  quantity  Int     @default(1)
+  @@unique([productId, hardwareId])
+  @@schema("public")
+}
+
+model ProductPart {
+  id        Int     @id @default(autoincrement())
+  product   Product @relation("ProductParts", fields: [productId], references: [id])
+  productId Int
+  part      Product @relation("PartUsedIn", fields: [partId], references: [id])
+  partId    Int
+  quantity  Int     @default(1)
+  @@unique([productId, partId])
+  @@schema("public")
+}
+
+model ProductHardwareKit {
+  id        Int     @id @default(autoincrement())
+  product   Product @relation("ProductHardwareKits", fields: [productId], references: [id])
+  productId Int
+  kit       Product @relation("HardwareKitUsedIn", fields: [kitId], references: [id])
+  kitId     Int
+  quantity  Int     @default(1)
+  @@unique([productId, kitId])
+  @@schema("public")
+}
