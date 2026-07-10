@@ -10,5 +10,6 @@ productRouter.get("/:sku", productController.getProductBySku);
     
 productRouter.post("/", productController.createProduct);
 
+productRouter.put("/:sku", productController.updateProduct);
 
 export default productRouter;

@@ -3,7 +3,7 @@ import prisma from '@lib/prisma.js';
 import productServices from '@services/products.services.js';
 import { Prisma } from '../generated/prisma/client.ts';
 import { z } from 'zod';
-import { createProductSchema } from '@schemas/product.schema.js';
+import { createProductSchema, updateProductSchema } from '@schemas/product.schema.js';
 
 const productController = {
  getAllProducts: async (req: Request, res: Response) => {
@@ -55,6 +55,29 @@ const productController = {
                 }
                 if (error.code === "P2003" || error.code === "P2025") {
                     return res.status(400).json({ error: "One or more referenced parts, hardware, or hardware kits do not exist" });
+                }
+            }
+            res.status(500).json({ error: "Internal Server Error" });
+        }
+    },
+
+    updateProduct: async (req: Request, res: Response) => {
+        try {
+            const parsed = updateProductSchema.safeParse(req.body);
+            if (!parsed.success) {
+                return res.status(400).json({ error: "Invalid request body", details: z.flattenError(parsed.error) });
+            }
+
+            const product = await productServices.updateProduct(req.params.sku, parsed.data);
+            res.status(200).json({ message: `${product.sku} updated successfully`, product });
+        }
+        catch (error) {
+            if (error instanceof Prisma.PrismaClientKnownRequestError) {
+                if (error.code === "P2025") {
+                    return res.status(404).json({ error: "Product not found" });
+                }
+                if (error.code === "P2002") {
+                    return res.status(400).json({ error: "Another product already uses that sku" });
                 }
             }
             res.status(500).json({ error: "Internal Server Error" });
