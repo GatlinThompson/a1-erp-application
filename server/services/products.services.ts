@@ -75,6 +75,28 @@ async function resolveComponentId(tx: Prisma.TransactionClient, ref: ComponentRe
     return component.id;
 }
 
+// Resolves a list of component refs to relation-create rows keyed by
+// `fkField` (e.g. "partId", "hardwareId", "kitId") — the field name Prisma
+// actually expects for that relation's nested `create`. Returns `undefined`
+// when `refs` itself is `undefined`, so callers can tell "not provided,
+// leave untouched" apart from "provided as an empty list, clear it".
+async function resolveComponentLinks<K extends string>(
+    tx: Prisma.TransactionClient,
+    pieces: ComponentRef[] | undefined,
+    type: ProductType,
+    fkField: K,
+): Promise<(Record<K, number> & { quantity: number })[] | undefined> {
+    if (pieces === undefined) {
+        return undefined;
+    }
+    const links: (Record<K, number> & { quantity: number })[] = [];
+    for (const piece of pieces) {
+        const id = await resolveComponentId(tx, piece, type);
+        links.push({ [fkField]: id, quantity: piece.quantity } as Record<K, number> & { quantity: number });
+    }
+    return links;
+}
+
 const productServices = {
   getAllProducts: async () => {
     const products = await prisma.product.findMany({});
@@ -97,38 +119,28 @@ const productServices = {
     // find-or-create. The whole operation runs in one transaction, so an
     // invalid reference or a failure anywhere rolls everything back instead
     // of leaving a partial product or orphaned components behind.
-    createProduct: async (input: CreateProductInput) => {
+    createProduct: async (data: CreateProductInput) => {
+
         return prisma.$transaction(async (tx) => {
-            const partLinks = [];
-            for (const part of input.parts ?? []) {
-                const partId = await resolveComponentId(tx, part, ProductType.PART);
-                partLinks.push({ partId, quantity: part.quantity });
-            }
+        
+            //Check if parts/kits/hardwares are valid and resolve them to product ids, creating new products if necessary. This is done in a transaction so that if any of the component resolutions fail, the whole operation rolls back.
+            const partLinks = await resolveComponentLinks(tx, data.parts, ProductType.PART, "partId");
+            const hardwareLinks = await resolveComponentLinks(tx, data.hardwares, ProductType.HARDWARE, "hardwareId");
+            const kitLinks = await resolveComponentLinks(tx, data.hardwareKits, ProductType.HARDWARE_KIT, "kitId");
 
-            const hardwareLinks = [];
-            for (const hardware of input.hardwares ?? []) {
-                const hardwareId = await resolveComponentId(tx, hardware, ProductType.HARDWARE);
-                hardwareLinks.push({ hardwareId, quantity: hardware.quantity });
-            }
-
-            const kitLinks = [];
-            for (const kit of input.hardwareKits ?? []) {
-                const kitId = await resolveComponentId(tx, kit, ProductType.HARDWARE_KIT);
-                kitLinks.push({ kitId, quantity: kit.quantity });
-            }
-
+            //Create the product with the resolved component links. The `create` operation includes the component relations if they exist, otherwise they are omitted.
             return tx.product.create({
                 data: {
-                    sku: input.sku.toUpperCase(),
-                    name: input.name,
-                    quantity_on_hand: input.quantity_on_hand ?? 0,
-                    reorder_point: input.reorder_point ?? 0,
-                    price: input.price,
-                    type: input.type,
-                    location: input.location ?? null,
-                    parts: partLinks.length ? { create: partLinks } : undefined,
-                    hardwares: hardwareLinks.length ? { create: hardwareLinks } : undefined,
-                    hardware_kits: kitLinks.length ? { create: kitLinks } : undefined,
+                    sku: data.sku.toUpperCase(),
+                    name: data.name,
+                    quantity_on_hand: data.quantity_on_hand ?? 0,
+                    reorder_point: data.reorder_point ?? 0,
+                    price: data.price,
+                    type: data.type,
+                    location: data.location ?? null,
+                    parts: partLinks?.length ? { create: partLinks } : undefined,
+                    hardwares: hardwareLinks?.length ? { create: hardwareLinks } : undefined,
+                    hardware_kits: kitLinks?.length ? { create: kitLinks } : undefined,
                 },
                 include: componentsInclude,
             });
@@ -143,33 +155,13 @@ const productServices = {
     // resolution + the relation replace + the scalar update all commit or
     // roll back together.
     updateProduct: async (sku: string, data: UpdateProductInput) => {
+
+
+
         return prisma.$transaction(async (tx) => {
-            let partLinks: { partId: number; quantity: number }[] | undefined;
-            if (data.parts !== undefined) {
-                partLinks = [];
-                for (const part of data.parts) {
-                    const partId = await resolveComponentId(tx, part, ProductType.PART);
-                    partLinks.push({ partId, quantity: part.quantity });
-                }
-            }
-
-            let hardwareLinks: { hardwareId: number; quantity: number }[] | undefined;
-            if (data.hardwares !== undefined) {
-                hardwareLinks = [];
-                for (const hardware of data.hardwares) {
-                    const hardwareId = await resolveComponentId(tx, hardware, ProductType.HARDWARE);
-                    hardwareLinks.push({ hardwareId, quantity: hardware.quantity });
-                }
-            }
-
-            let kitLinks: { kitId: number; quantity: number }[] | undefined;
-            if (data.hardwareKits !== undefined) {
-                kitLinks = [];
-                for (const kit of data.hardwareKits) {
-                    const kitId = await resolveComponentId(tx, kit, ProductType.HARDWARE_KIT);
-                    kitLinks.push({ kitId, quantity: kit.quantity });
-                }
-            }
+            const partLinks = await resolveComponentLinks(tx, data.parts, ProductType.PART, "partId");
+            const hardwareLinks = await resolveComponentLinks(tx, data.hardwares, ProductType.HARDWARE, "hardwareId");
+            const kitLinks = await resolveComponentLinks(tx, data.hardwareKits, ProductType.HARDWARE_KIT, "kitId");
 
             return tx.product.update({
                 where: { sku: sku.toUpperCase() },
