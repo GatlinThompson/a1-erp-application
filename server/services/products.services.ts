@@ -28,11 +28,14 @@ async function resolveComponentId(tx: Prisma.TransactionClient, ref: ComponentRe
     return component.id;
 }
 
-// Resolves a list of component refs to relation-create rows keyed by
-// `fkField` (e.g. "partId", "hardwareId", "kitId") — the field name Prisma
-// actually expects for that relation's nested `create`. Returns `undefined`
-// when `refs` itself is `undefined`, so callers can tell "not provided,
-// leave untouched" apart from "provided as an empty list, clear it".
+/**
+ * Resolves an array of component references to an array of objects containing the foreign key field and quantity.
+ * @param tx  The Prisma transaction client to use for database operations
+ * @param pieces  An array of component references (either existing product ids or new product skus)
+ * @param type  The type of the components (e.g., PART, HARDWARE, HARDWARE_KIT)
+ * @param fkField  The foreign key field name to use in the resulting objects (e.g., "partId", "hardwareId", "kitId")
+ * @returns  An array of objects containing the foreign key field and quantity, or `undefined` if no pieces were provided
+ */
 async function resolveComponentLinks<K extends string>(
     tx: Prisma.TransactionClient,
     pieces: ComponentRef[] | undefined,
@@ -50,10 +53,14 @@ async function resolveComponentLinks<K extends string>(
     return links;
 }
 
-// Resolves all three component relations at once, keyed by the Prisma
-// relation field names (`hardware_kits`, not `hardwareKits`) so callers can
-// spread the result straight into a `product.create`/`product.update`
-// `data` object without repeating each relation's fk field name.
+
+
+/**
+ * Resolves the component relations for a product, creating new products as necessary.
+ * @param tx  The Prisma transaction client to use for database operations
+ * @param input  An object containing optional arrays of component references for parts, hardwares, and hardware_kits
+* @returns  An object containing the resolved component relations for parts, hardwares, and hardware_kits. Each relation is an array of objects with the foreign key field (e.g., partId, hardwareId, kitId) and the quantity.
+ */
 async function resolveComponentRelations(
     tx: Prisma.TransactionClient,
     input: { parts?: ComponentRef[]; hardwares?: ComponentRef[]; hardwareKits?: ComponentRef[] },
@@ -64,6 +71,7 @@ async function resolveComponentRelations(
     return { parts, hardwares, hardware_kits };
 }
 
+// Service layer for product-related operations, including fetching, creating, updating, archiving, and unarchiving products. Each operation is performed within a transaction to ensure data integrity, especially when dealing with component relations that may involve creating new products on the fly.
 const productServices = {
   
     /**
@@ -72,6 +80,20 @@ const productServices = {
      */
     getAllProducts: async () => {
         const products = await prisma.product.findMany({});
+        return products;
+     },
+
+     /**
+      * Fetches products by their type from the database.
+      * @param type  The type of products to fetch (e.g., PART, HARDWARE, HARDWARE_KIT)
+      * @returns  An array of products matching the specified type
+      */
+     getProducsByType: async (type: ProductType) => {
+        const products = await prisma.product.findMany({
+            where: {
+                type: type,
+            },
+        });
         return products;
      },
 
@@ -150,7 +172,31 @@ const productServices = {
                 include: componentsInclude,
             });
         });
-    }
+    },
+
+    /**
+     * Archives a product by its SKU.
+     * @param sku  The SKU of the product to archive
+     * @returns  The archived product
+     */
+    archiveProduct: async (sku: string) => {
+        return prisma.product.update({
+            where: { sku: sku.toUpperCase() },
+            data: { archived: true },
+        });
+    },
+
+    /**
+     * Unarchives a product by its SKU.
+     * @param sku  The SKU of the product to unarchive
+     * @returns  The unarchived product
+     */
+    unarchiveProduct: async (sku: string) => {
+        return prisma.product.update({
+            where: { sku: sku.toUpperCase() },
+            data: { archived: false },
+        });
+    },
 };
 
 export default productServices;

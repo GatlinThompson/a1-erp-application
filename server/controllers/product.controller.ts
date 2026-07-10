@@ -6,22 +6,34 @@ import { z } from 'zod';
 import { createProductSchema, updateProductSchema } from '@schemas/product.schema.js';
 
 const productController = {
- getAllProducts: async (req: Request, res: Response) => {
-    try {
-        const products = await productServices.getAllProducts();
+    /**
+     * Retrieves all products.
+     * @param req  The request object
+     * @param res  The response object
+     *  @returns  A list of all products
+     */
+    getAllProducts: async (req: Request, res: Response) => {
+        try {
+            const products = await productServices.getAllProducts();
 
-        
-        if (!products) {
-            return res.status(404).json({ error: "No products found" });
+            
+            if (!products) {
+                return res.status(404).json({ error: "No products found" });
+            }
+
+            res.status(200).json(products);
         }
-
-        res.status(200).json(products);
-    }
-    catch (error) {
-        res.status(500).json({ error: "Internal Server Error" });
-    }
+        catch (error) {
+            res.status(500).json({ error: "Internal Server Error" });
+        }
     },
-
+    
+    /**
+     * Retrieves a product by its SKU.
+     * @param req  The request object
+     * @param res  The response object
+     * @returns  The product with the given SKU, or a 404 error if not found
+     */
     getProductBySku: async (req: Request, res: Response) => {
         try {
             const product = await productServices.getProductBySku(req.params.sku);
@@ -37,7 +49,12 @@ const productController = {
         }
     },
 
-
+    /**
+     * Creates a new product.
+     * @param req  The request object
+     * @param res  The response object
+     * @returns  The created product
+     */
     createProduct: async (req: Request, res: Response) => {
         try {
             const parsed = createProductSchema.safeParse(req.body);
@@ -61,6 +78,12 @@ const productController = {
         }
     },
 
+    /**
+     * Updates a product by its SKU.
+     * @param req  The request object
+     * @param res  The response object
+     * @returns  The updated product
+     */
     updateProduct: async (req: Request, res: Response) => {
         try {
             const parsed = updateProductSchema.safeParse(req.body);
@@ -83,6 +106,45 @@ const productController = {
             res.status(500).json({ error: "Internal Server Error" });
         }
     },
+
+    /**
+     * Archives a product by its SKU.
+     * @param req  The request object
+     * @param res  The response object
+     * @returns  The archived product
+     */
+    archiveProduct: async (req: Request, res: Response) => {
+        try {
+            const product = await productServices.archiveProduct(req.params.sku);
+
+            
+            if (!product) {
+                return res.status(404).json({ error: "Product not found" });
+            }
+
+            res.status(200).json({ message: `${product.sku} archived successfully`, product });
+
+        }
+        catch (error) {
+            res.status(500).json({ error: "Internal Server Error" });
+        }
+    },
+
+    /**
+     * Unarchives a product by its SKU.
+     * @param req  The request object
+     * @param res  The response object
+     * @returns  The unarchived product
+     */
+    unarchiveProduct: async (req: Request, res: Response) => {
+        try {
+            const product = await productServices.unarchiveProduct(req.params.sku);
+            res.status(200).json({ message: `${product.sku} unarchived successfully`, product });
+        }
+        catch (error) {
+            res.status(500).json({ error: "Internal Server Error" });
+        }
+    }
 };
 
     export default productController;

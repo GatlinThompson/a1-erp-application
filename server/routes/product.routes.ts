@@ -12,4 +12,8 @@ productRouter.post("/", productController.createProduct);
 
 productRouter.put("/:sku", productController.updateProduct);
 
+productRouter.delete("/:sku", productController.archiveProduct);
+
+productRouter.put("/:sku/unarchive", productController.unarchiveProduct);
+
 export default productRouter;
