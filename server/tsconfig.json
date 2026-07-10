@@ -9,15 +9,14 @@
     "noEmit": true,
     "strict": true,
     "skipLibCheck": true,
-    "ignoreDeprecations": "6.0",
-    "baseUrl": ".",
     "paths": {
       "@lib/*.js": ["./lib/*.ts"],
-      "@routes/*.js": ["routes/*.ts"],
-      "@controllers/*.js": ["controllers/*.ts"],
-      "@services/*.js": ["services/*.ts"],
-      "@models/*.js": ["models/*.ts"],
-      "@schemas/*.js": ["schemas/*.ts"]
+      "@routes/*.js": ["./routes/*.ts"],
+      "@controllers/*.js": ["./controllers/*.ts"],
+      "@services/*.js": ["./services/*.ts"],
+      "@models/*.js": ["./models/*.ts"],
+      "@schemas/*.js": ["./schemas/*.ts"],
+      "@utils/*.js": ["./utils/*.ts"]
     }
   }
 }

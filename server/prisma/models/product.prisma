@@ -17,6 +17,8 @@ model Product {
   price     Float  @default(0.00)
   location  String? @default("A1")
   type      ProductType
+  archived  Boolean     @default(false)
+  allocated_quantity Int         @default(0)
   hardwares  ProductHardware[]     @relation("ProductHardwares")
   usedInHardwares ProductHardware[] @relation("HardwareUsedIn")
   parts      ProductPart[]        @relation("ProductParts")

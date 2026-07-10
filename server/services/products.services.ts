@@ -1,56 +1,8 @@
 import prisma from "@lib/prisma.js";
-import type { CreateProductInput, UpdateProductInput } from "@schemas/product.schema.js";
+import type { CreateProductInput, UpdateProductInput, ComponentRef } from "@schemas/product.schema.js";
 import { ProductType, Prisma } from "../generated/prisma/client.ts";
+import componentsInclude  from "@utils/product.utils.js";
 
-const componentsInclude = {
-    parts: {
-        select: {
-            quantity: true,
-            part: {
-                select: {
-                    id: true,
-                    sku: true,
-                    name: true,
-                    quantity_on_hand: true,
-                },
-            },
-        },
-    },
-    hardwares: {
-        select: {
-            quantity: true,
-            hardware: {
-                select: {
-                    id: true,
-                    sku: true,
-                    name: true,
-                    quantity_on_hand: true,
-                },
-            },
-        },
-    },
-    hardware_kits: {
-        select: {
-            quantity: true,
-            kit: {
-                select: {
-                    id: true,
-                    sku: true,
-                    name: true,
-                    quantity_on_hand: true,
-                },
-            },
-        },
-    },
-} as const;
-
-type ComponentRef = {
-    quantity: number;
-    id?: number;
-    sku?: string;
-    name?: string | null;
-    price?: number;
-};
 
 // Resolves a component reference to a product id: uses `id` directly if
 // given, otherwise finds an existing product by `sku` or creates a new one
@@ -68,6 +20,7 @@ async function resolveComponentId(tx: Prisma.TransactionClient, ref: ComponentRe
             sku,
             name: ref.name ?? null,
             price: ref.price ?? 0,
+            location: ref.location ?? null,
             type,
         },
         select: { id: true },
@@ -97,12 +50,37 @@ async function resolveComponentLinks<K extends string>(
     return links;
 }
 
+// Resolves all three component relations at once, keyed by the Prisma
+// relation field names (`hardware_kits`, not `hardwareKits`) so callers can
+// spread the result straight into a `product.create`/`product.update`
+// `data` object without repeating each relation's fk field name.
+async function resolveComponentRelations(
+    tx: Prisma.TransactionClient,
+    input: { parts?: ComponentRef[]; hardwares?: ComponentRef[]; hardwareKits?: ComponentRef[] },
+) {
+    const parts = await resolveComponentLinks(tx, input.parts, ProductType.PART, "partId");
+    const hardwares = await resolveComponentLinks(tx, input.hardwares, ProductType.HARDWARE, "hardwareId");
+    const hardware_kits = await resolveComponentLinks(tx, input.hardwareKits, ProductType.HARDWARE_KIT, "kitId");
+    return { parts, hardwares, hardware_kits };
+}
+
 const productServices = {
-  getAllProducts: async () => {
-    const products = await prisma.product.findMany({});
-    return products;
-  },
-    getProductBySku: async (sku: string) => {
+  
+    /**
+     * Fetches all products from the database.
+     * @returns  All products in the database
+     */
+    getAllProducts: async () => {
+        const products = await prisma.product.findMany({});
+        return products;
+     },
+
+    /**
+     * Fetches a product by its SKU, including its components.
+     * @param sku  The SKU of the product to fetch
+     * @returns  The product with the given SKU, or null if not found
+     */
+   getProductBySku: async (sku: string) => {
         const product = await prisma.product.findUnique({
             where: {
                 sku: sku.toLocaleUpperCase(),
@@ -112,21 +90,16 @@ const productServices = {
         return product;
     },
 
-
-    // Creates a product along with its parts/hardwares/hardware kits.
-    // Each component may reference an existing product (`id`) or describe
-    // a new one to create (`sku`/`name`/`price`), which is resolved via
-    // find-or-create. The whole operation runs in one transaction, so an
-    // invalid reference or a failure anywhere rolls everything back instead
-    // of leaving a partial product or orphaned components behind.
+    /**
+     * Creates a new product along with its associated components.
+     * @param data  The data for the product to create
+     * @returns  The created product
+     */
     createProduct: async (data: CreateProductInput) => {
 
         return prisma.$transaction(async (tx) => {
-        
             //Check if parts/kits/hardwares are valid and resolve them to product ids, creating new products if necessary. This is done in a transaction so that if any of the component resolutions fail, the whole operation rolls back.
-            const partLinks = await resolveComponentLinks(tx, data.parts, ProductType.PART, "partId");
-            const hardwareLinks = await resolveComponentLinks(tx, data.hardwares, ProductType.HARDWARE, "hardwareId");
-            const kitLinks = await resolveComponentLinks(tx, data.hardwareKits, ProductType.HARDWARE_KIT, "kitId");
+            const { parts, hardwares, hardware_kits } = await resolveComponentRelations(tx, data);
 
             //Create the product with the resolved component links. The `create` operation includes the component relations if they exist, otherwise they are omitted.
             return tx.product.create({
@@ -138,31 +111,26 @@ const productServices = {
                     price: data.price,
                     type: data.type,
                     location: data.location ?? null,
-                    parts: partLinks?.length ? { create: partLinks } : undefined,
-                    hardwares: hardwareLinks?.length ? { create: hardwareLinks } : undefined,
-                    hardware_kits: kitLinks?.length ? { create: kitLinks } : undefined,
+                    parts: parts?.length ? { create: parts } : undefined,
+                    hardwares: hardwares?.length ? { create: hardwares } : undefined,
+                    hardware_kits: hardware_kits?.length ? { create: hardware_kits } : undefined,
                 },
                 include: componentsInclude,
             });
         });
     },
 
-    // Updates a product's own fields and, for any of parts/hardwares/
-    // hardwareKits that are present in `data`, replaces that relation's
-    // full set of links (add, edit quantity, or remove all happen by
-    // submitting the new complete list). A key left out of `data` leaves
-    // that relation untouched. Runs in one transaction so component
-    // resolution + the relation replace + the scalar update all commit or
-    // roll back together.
+    /**
+     * Updates an existing product by its SKU, along with its associated components.
+     * @param sku  The SKU of the product to update
+     * @param data  The data for the product to update
+     * @returns  The updated product
+     */
     updateProduct: async (sku: string, data: UpdateProductInput) => {
-
-
-
         return prisma.$transaction(async (tx) => {
-            const partLinks = await resolveComponentLinks(tx, data.parts, ProductType.PART, "partId");
-            const hardwareLinks = await resolveComponentLinks(tx, data.hardwares, ProductType.HARDWARE, "hardwareId");
-            const kitLinks = await resolveComponentLinks(tx, data.hardwareKits, ProductType.HARDWARE_KIT, "kitId");
+            const { parts, hardwares, hardware_kits } = await resolveComponentRelations(tx, data);
 
+            // Update the product with the resolved component links. The `update` operation includes the component relations if they exist, otherwise they are omitted. The `deleteMany: {}` ensures that any existing links are removed before creating the new ones, effectively replacing the full set of links for that relation.
             return tx.product.update({
                 where: { sku: sku.toUpperCase() },
                 data: {
@@ -173,9 +141,11 @@ const productServices = {
                     price: data.price,
                     type: data.type,
                     location: data.location ?? null,
-                    parts: partLinks ? { deleteMany: {}, create: partLinks } : undefined,
-                    hardwares: hardwareLinks ? { deleteMany: {}, create: hardwareLinks } : undefined,
-                    hardware_kits: kitLinks ? { deleteMany: {}, create: kitLinks } : undefined,
+                    archived: data.archived,
+                    allocated_quantity: data.allocated_quantity,
+                    parts: parts ? { deleteMany: {}, create: parts } : undefined,
+                    hardwares: hardwares ? { deleteMany: {}, create: hardwares } : undefined,
+                    hardware_kits: hardware_kits ? { deleteMany: {}, create: hardware_kits } : undefined,
                 },
                 include: componentsInclude,
             });

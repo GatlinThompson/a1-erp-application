@@ -4,7 +4,7 @@ import { ProductType } from "../generated/prisma/client.ts";
 // A component can reference an existing product (`id`) or describe a new
 // one to create on the fly (`sku`, plus optional `name`/`price`). At least
 // one of the two must be present.
-const componentRefSchema = z
+export const componentRefSchema = z
     .object({
         quantity: z.number().int().positive(),
         id: z.number().int().positive().optional(),
@@ -26,6 +26,8 @@ const baseProductSchema = z.object({
     price: z.number().nonnegative(),
     location: z.string().trim().min(1).optional().nullable(),
     type: z.nativeEnum(ProductType),
+    archived: z.boolean().optional(),
+    allocated_quantity: z.number().int().nonnegative().optional(),
 });
 
 export const createProductSchema = baseProductSchema.extend({
@@ -46,3 +48,4 @@ export const updateProductSchema = baseProductSchema.partial().extend({
 
 export type CreateProductInput = z.infer<typeof createProductSchema>;
 export type UpdateProductInput = z.infer<typeof updateProductSchema>;
+export type ComponentRef = z.infer<typeof componentRefSchema>;
