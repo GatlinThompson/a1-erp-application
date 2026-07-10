@@ -15,6 +15,7 @@ model Product {
   quantity_on_hand  Int         @default(0)
   reorder_point      Int         @default(0)
   price     Float  @default(0.00)
+  location  String? @default("A1")
   type      ProductType
   hardwares  ProductHardware[]     @relation("ProductHardwares")
   usedInHardwares ProductHardware[] @relation("HardwareUsedIn")
@@ -22,6 +23,8 @@ model Product {
   usedInParts ProductPart[]       @relation("PartUsedIn")
   hardware_kits ProductHardwareKit[] @relation("ProductHardwareKits")
   usedInHardwareKits ProductHardwareKit[] @relation("HardwareKitUsedIn")
+  materials  ProductMaterial[]     @relation("ProductMaterials")
+  usedInMaterials ProductMaterial[] @relation("MaterialUsedIn")
   @@schema("public")
 }
 
@@ -55,5 +58,16 @@ model ProductHardwareKit {
   kitId     Int
   quantity  Int     @default(1)
   @@unique([productId, kitId])
+  @@schema("public")
+}
+
+model ProductMaterial {
+  id        Int     @id @default(autoincrement())
+  product   Product @relation("ProductMaterials", fields: [productId], references: [id])
+  productId Int
+  material  Product @relation("MaterialUsedIn", fields: [materialId], references: [id])
+  materialId Int
+  quantity  Int     @default(1) // Quantity of material required for the product fix for specific dim
+  @@unique([productId, materialId])
   @@schema("public")
 }

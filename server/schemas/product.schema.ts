@@ -11,6 +11,7 @@ const componentRefSchema = z
         sku: z.string().trim().min(1).optional(),
         name: z.string().trim().min(1).optional().nullable(),
         price: z.number().nonnegative().optional(),
+        location: z.string().trim().min(1).optional().nullable(),
     })
     .refine((ref) => ref.id !== undefined || ref.sku !== undefined, {
         message: "Provide either an existing component id or a sku to create a new one",
@@ -23,6 +24,7 @@ const baseProductSchema = z.object({
     quantity_on_hand: z.number().int().nonnegative().optional(),
     reorder_point: z.number().int().nonnegative().optional(),
     price: z.number().nonnegative(),
+    location: z.string().trim().min(1).optional().nullable(),
     type: z.nativeEnum(ProductType),
 });
 
