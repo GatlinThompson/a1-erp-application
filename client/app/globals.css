@@ -1,11 +1,20 @@
 @import "tailwindcss";
 
 :root {
-  --background: #D7D7D7;
-  --secondary-background: #DFE9EF;
+  --background: #d7d7d7;
+  --secondary-background: #dfe9ef;
   --foreground: #000;
   --primary: #101020;
-  --secondary: #EB6E6E;
+  --secondary: #eb6e6e;
+  --font-roboto: "Roboto", sans-serif;
+  --input-background: #dfdddd;
+  box-sizing: border-box;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: inherit;
 }
 
 @theme inline {
@@ -16,10 +25,28 @@
   --color-secondary-background: var(--secondary-background);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+  --font-roboto: var(--font-roboto);
+  --color-input-background: var(--input-background);
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-roboto);
+}
+
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
+input:-webkit-autofill:active {
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: var(--foreground); /* Your input text color */
+  transition: var(--input-background) 9999s ease-in-out 0s;
+  box-shadow: inset 0 0 20px 20px transparent;
+}
+
+/* End of global styles */
+
+.shadow-custom-3xl {
+  box-shadow: 0 10px 15px 0 rgba(0, 0, 0, 0.25);
 }

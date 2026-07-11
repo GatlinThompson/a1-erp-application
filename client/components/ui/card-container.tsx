@@ -1,13 +1,13 @@
-import React from 'react'
+import React from "react";
 
-/**
- * 
- * @returns 
- */
-export default function CardContainer() {
+type CardContainerComponents = {
+  children: React.ReactNode;
+};
+
+export default function CardContainer({ children }: CardContainerComponents) {
   return (
-    <div className="flex flex-col items-center justify-center bg-white r">
-       <p>asd</p>
+    <div className="flex flex-col items-center justify-center bg-white rounded-xl shadow-custom-3xl">
+      {children}
     </div>
-  )
+  );
 }

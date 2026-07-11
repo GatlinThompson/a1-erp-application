@@ -1,19 +1,29 @@
 import express, { type Request, type Response } from "express";
-import prisma from "@lib/prisma.js";
 import productController from "@controllers/product.controller.js";
+import { authenticate, authorize } from "@middleware/auth.middleware.js";
 
 const productRouter: express.Router = express.Router();
 
-productRouter.get("/",  productController.getAllProducts);
+productRouter.use(authenticate);
+
+productRouter.get("/", productController.getAllProducts);
 
 productRouter.get("/:sku", productController.getProductBySku);
-    
+
 productRouter.post("/", productController.createProduct);
 
 productRouter.put("/:sku", productController.updateProduct);
 
-productRouter.delete("/:sku", productController.archiveProduct);
+productRouter.delete(
+  "/:sku",
+  authorize("MANAGER", "ADMIN"),
+  productController.archiveProduct,
+);
 
-productRouter.put("/:sku/unarchive", productController.unarchiveProduct);
+productRouter.put(
+  "/:sku/unarchive",
+  authorize("MANAGER", "ADMIN"),
+  productController.unarchiveProduct,
+);
 
 export default productRouter;

@@ -1,5 +1,6 @@
 import express, { type Express, type Request, type Response } from "express";
 import productRouter from "./product.routes.ts";
+import authRouter from "./auth.routes.ts";
 
 const router = express.Router();
 
@@ -13,5 +14,8 @@ router.get("/", (_req: Request, res: Response) => {
 
 //------- Product Routes -------------------------------------------
 router.use("/products", productRouter);
+
+//------- Auth Routes -------------------------------------------
+router.use("/auth", authRouter);
 
 export default router;

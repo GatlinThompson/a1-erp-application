@@ -16,7 +16,8 @@
       "@services/*.js": ["./services/*.ts"],
       "@models/*.js": ["./models/*.ts"],
       "@schemas/*.js": ["./schemas/*.ts"],
-      "@utils/*.js": ["./utils/*.ts"]
+      "@utils/*.js": ["./utils/*.ts"],
+      "@middleware/*.js": ["./middleware/*.ts"]
     }
   }
 }

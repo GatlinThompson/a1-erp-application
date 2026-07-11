@@ -1,0 +1,30 @@
+
+enum Role {
+  USER
+  MANAGER
+  ADMIN
+  @@schema("public")
+}
+
+model User {
+  id        String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  email     String?   @unique
+  username  String   @unique
+  password_hash  String
+  firstName String
+  lastName  String
+  createdAt DateTime @default(now())
+  role      Role     @default(USER)
+  active    Boolean  @default(true)
+  department Department @relation(fields: [departmentId], references: [id])
+  departmentId Int
+  @@schema("public")
+}
+
+model Department {
+  id        Int      @id @default(autoincrement())
+  name      String   @unique
+  createdAt DateTime @default(now())
+  users     User[]
+  @@schema("public")
+}
