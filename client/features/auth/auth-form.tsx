@@ -59,7 +59,7 @@ export default function AuthForm() {
         <Input
           label="Username"
           type="text"
-          placeholder="Enter your username"
+          placeholder="Enter your username or email"
           error={errors.username?.message}
           {...register("username")}
         />

@@ -6,8 +6,15 @@ import { comparePassword } from "@schemas/auth.schema.js";
 import { loginSchema, registerSchema } from "@schemas/auth.schema.js";
 import { signToken } from "@utils/jwt.utils.js";
 import { setAuthCookie, clearAuthCookie } from "@utils/cookie.utils.js";
+import authService from "@services/auth.services.js";
 
 const authController = {
+  /**
+   * Handles user login
+   * @param req - Express request object containing login credentials
+   * @param res - Express response object used to send the response back to the client
+   * @returns A JSON response indicating the result of the login attempt
+   */
   login: async (req: Request, res: Response) => {
     try {
       const parsed = loginSchema.safeParse(req.body);
@@ -41,6 +48,9 @@ const authController = {
 
       const token = signToken({
         userId: user.id,
+        email: user.email ?? null,
+        firstName: user.firstName ?? null,
+        lastName: user.lastName ?? null,
         username: user.username ?? null,
         role: user.role,
       });
@@ -52,6 +62,12 @@ const authController = {
     }
   },
 
+  /**
+   * Handles user registration
+   * @param req - Express request object containing registration details
+   * @param res - Express response object used to send the response back to the client
+   * @returns A JSON response indicating the result of the registration attempt
+   */
   register: async (req: Request, res: Response) => {
     try {
       const parsed = registerSchema.safeParse(req.body);
@@ -62,9 +78,12 @@ const authController = {
         });
       }
 
-      const user = await userService.createUser(parsed.data);
+      const user = await authService.createUser(parsed.data);
       const token = signToken({
         userId: user.id,
+        email: user.email ?? null,
+        firstName: user.firstName ?? null,
+        lastName: user.lastName ?? null,
         username: user.username ?? null,
         role: user.role,
       });
@@ -86,6 +105,11 @@ const authController = {
     }
   },
 
+  /**
+   * Handles user logout by clearing the authentication cookie
+   * @param res - Express response object used to send the response back to the client
+   * @returns A JSON response indicating the result of the logout attempt
+   */
   logout: (_req: Request, res: Response) => {
     clearAuthCookie(res);
     res.status(200).json({ message: "Logout successful" });

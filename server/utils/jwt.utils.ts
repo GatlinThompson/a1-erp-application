@@ -10,6 +10,9 @@ if (!JWT_SECRET) {
 export type JwtPayload = {
   userId: string;
   username: string;
+  firstName: string | null;
+  lastName: string | null;
+  email: string | null;
   role: "USER" | "MANAGER" | "ADMIN";
 };
 
