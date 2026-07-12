@@ -2,6 +2,7 @@ import { type NextFunction, type Request, type Response } from "express";
 import jwt from "jsonwebtoken";
 import { verifyToken, type JwtPayload } from "@utils/jwt.utils.js";
 import userService from "@services/user.services.js";
+import { AUTH_COOKIE_NAME } from "@utils/cookie.utils.js";
 
 export const authenticate = async (
   req: Request,
@@ -9,13 +10,14 @@ export const authenticate = async (
   next: NextFunction,
 ) => {
   const authHeader = req.headers.authorization;
-  if (!authHeader?.startsWith("Bearer ")) {
-    return res
-      .status(401)
-      .json({ error: "Missing or invalid authorization header" });
-  }
+  const bearerToken = authHeader?.startsWith("Bearer ")
+    ? authHeader.slice("Bearer ".length)
+    : undefined;
+  const token = req.cookies?.[AUTH_COOKIE_NAME] ?? bearerToken;
 
-  const token = authHeader.slice("Bearer ".length);
+  if (!token) {
+    return res.status(401).json({ error: "Not authenticated" });
+  }
 
   let payload: JwtPayload;
   try {

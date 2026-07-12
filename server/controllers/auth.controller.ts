@@ -1,10 +1,11 @@
 import { type Request, type Response } from "express";
 import { Prisma } from "../generated/prisma/client.ts";
-import { z } from "zod";
+import { email, z } from "zod";
 import userService from "@services/user.services.js";
-import { comparePassword } from "@schemas/user.schema.js";
+import { comparePassword } from "@schemas/auth.schema.js";
 import { loginSchema, registerSchema } from "@schemas/auth.schema.js";
 import { signToken } from "@utils/jwt.utils.js";
+import { setAuthCookie, clearAuthCookie } from "@utils/cookie.utils.js";
 
 const authController = {
   login: async (req: Request, res: Response) => {
@@ -17,17 +18,17 @@ const authController = {
         });
       }
 
-      if (!parsed.data.email_username || !parsed.data.password) {
+      if (!parsed.data.username || !parsed.data.password) {
         return res
           .status(400)
-          .json({ error: "Email and password are required" });
+          .json({ error: "Username and password are required" });
       }
 
       const user = await userService.findByEmailOrUsername(
-        parsed.data.email_username,
+        parsed.data.username,
       );
       if (!user) {
-        return res.status(401).json({ error: "Invalid email or password" });
+        return res.status(401).json({ error: "Invalid username or password" });
       }
 
       const passwordMatches = await comparePassword(
@@ -35,7 +36,7 @@ const authController = {
         user.password_hash,
       );
       if (!passwordMatches) {
-        return res.status(401).json({ error: "Invalid email or password" });
+        return res.status(401).json({ error: "Invalid username or password" });
       }
 
       const token = signToken({
@@ -44,7 +45,8 @@ const authController = {
         role: user.role,
       });
 
-      res.status(200).json({ token });
+      setAuthCookie(res, token);
+      res.status(200).json({ message: "Login successful" });
     } catch (error) {
       res.status(500).json({ error: "Internal Server Error" });
     }
@@ -67,13 +69,14 @@ const authController = {
         role: user.role,
       });
 
-      res.status(201).json({ token });
+      setAuthCookie(res, token);
+      res.status(201).json({ message: "Registration successful" });
     } catch (error) {
       if (error instanceof Prisma.PrismaClientKnownRequestError) {
         if (error.code === "P2002") {
           return res
             .status(400)
-            .json({ error: "An account with that email already exists" });
+            .json({ error: "An account with that username already exists" });
         }
         if (error.code === "P2003") {
           return res.status(400).json({ error: "Department does not exist" });
@@ -81,6 +84,11 @@ const authController = {
       }
       res.status(500).json({ error: "Internal Server Error" });
     }
+  },
+
+  logout: (_req: Request, res: Response) => {
+    clearAuthCookie(res);
+    res.status(200).json({ message: "Logout successful" });
   },
 };
 

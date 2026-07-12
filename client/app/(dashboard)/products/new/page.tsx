@@ -9,8 +9,7 @@ import {
   type ProductSummary,
   type ProductType,
 } from "../_components/ComponentSection";
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8080/api";
+import { API_URL, apiFetch } from "@/lib/api";
 
 export default function NewProductPage() {
   const [products, setProducts] = useState<ProductSummary[]>([]);
@@ -28,7 +27,7 @@ export default function NewProductPage() {
   const [result, setResult] = useState<unknown>(null);
 
   const loadProducts = () => {
-    fetch(`${API_URL}/products`)
+    apiFetch("/products")
       .then((res) => res.json())
       .then((data) => setProducts(Array.isArray(data) ? data : []))
       .catch(() => setProducts([]));
@@ -57,7 +56,7 @@ export default function NewProductPage() {
     };
 
     try {
-      const res = await fetch(`${API_URL}/products`, {
+      const res = await apiFetch("/products", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),

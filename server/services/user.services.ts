@@ -1,6 +1,6 @@
 import prisma from "@lib/prisma.js";
 import type { RegisterInput } from "@schemas/auth.schema.js";
-import { hashPassword } from "@schemas/user.schema.js";
+import { hashPassword } from "@schemas/auth.schema.js";
 import { uuid } from "zod";
 
 const userService = {

@@ -9,8 +9,7 @@ import {
   type ProductSummary,
   type ProductType,
 } from "../../_components/ComponentSection";
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8080/api";
+import { API_URL, apiFetch } from "@/lib/api";
 
 type ComponentLink = {
   quantity: number;
@@ -66,7 +65,7 @@ export default function EditProductPage({ params }: { params: Promise<{ sku: str
   const [result, setResult] = useState<unknown>(null);
 
   const loadProducts = () => {
-    fetch(`${API_URL}/products`)
+    apiFetch("/products")
       .then((res) => res.json())
       .then((data) => setProducts(Array.isArray(data) ? data : []))
       .catch(() => setProducts([]));
@@ -79,7 +78,7 @@ export default function EditProductPage({ params }: { params: Promise<{ sku: str
     setResult(null);
 
     try {
-      const res = await fetch(`${API_URL}/products/${encodeURIComponent(targetSku)}`);
+      const res = await apiFetch(`/products/${encodeURIComponent(targetSku)}`);
       const data = await res.json();
       if (!res.ok) {
         setLoadError(data?.error ?? `Request failed with status ${res.status}`);
@@ -132,7 +131,7 @@ export default function EditProductPage({ params }: { params: Promise<{ sku: str
     };
 
     try {
-      const res = await fetch(`${API_URL}/products/${encodeURIComponent(loadedSku)}`, {
+      const res = await apiFetch(`/products/${encodeURIComponent(loadedSku)}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),

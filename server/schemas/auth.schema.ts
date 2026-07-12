@@ -1,7 +1,8 @@
 import { z } from "zod";
+import bcrypt from "bcryptjs";
 
 export const loginSchema = z.object({
-  email_username: z.string().trim().min(1).optional(),
+  username: z.string().trim().min(1).optional(),
   password: z.string().min(1, "Password is required"),
 });
 
@@ -16,3 +17,15 @@ export const registerSchema = z.object({
 
 export type LoginInput = z.infer<typeof loginSchema>;
 export type RegisterInput = z.infer<typeof registerSchema>;
+
+export const hashPassword = async (password: string): Promise<string> => {
+  const salt = await bcrypt.genSalt(10);
+  return bcrypt.hash(password, salt);
+};
+
+export const comparePassword = (
+  password: string,
+  hash: string,
+): Promise<boolean> => {
+  return bcrypt.compare(password, hash);
+};
