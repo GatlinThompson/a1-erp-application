@@ -12,7 +12,7 @@ export default function NavButton({ onClick, expanded }: NavButtonProps) {
         onClick={onClick}
         className="rounded-r-xs rounded-l-sm bg-secondary text-primary-foreground h-11 w-3  text-white font-semibold"
       >
-        <span className="ml-0.5"> {expanded ? "<" : ">"}</span>
+        <span className="ml-0.5 text-xs"> {expanded ? "<" : ">"}</span>
       </button>
     </div>
   );
