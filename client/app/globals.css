@@ -8,6 +8,7 @@
   --secondary: #eb6e6e;
   --font-roboto: "Roboto", sans-serif;
   --input-background: #dfdddd;
+  --subtle-background: #c7c5c5;
   box-sizing: border-box;
 }
 
@@ -20,6 +21,7 @@
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
+  --color-subtle-background: var(--subtle-background);
   --color-primary: var(--primary);
   --color-secondary: var(--secondary);
   --color-secondary-background: var(--secondary-background);

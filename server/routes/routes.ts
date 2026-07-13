@@ -1,6 +1,7 @@
 import express, { type Express, type Request, type Response } from "express";
 import productRouter from "./product.routes.ts";
 import authRouter from "./auth.routes.ts";
+import userRouter from "./user.routes.ts";
 
 const router = express.Router();
 
@@ -17,5 +18,8 @@ router.use("/products", productRouter);
 
 //------- Auth Routes -------------------------------------------
 router.use("/auth", authRouter);
+
+//------- User Routes -------------------------------------------
+router.use("/users", userRouter);
 
 export default router;

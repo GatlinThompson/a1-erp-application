@@ -15,3 +15,11 @@ export const userSchema = z.object({
 });
 
 export type UserType = z.infer<typeof userSchema>;
+
+export const userSettingsSchema = z
+  .object({
+    navExpanded: z.boolean(),
+  })
+  .partial();
+
+export type UserSettingsInput = z.infer<typeof userSettingsSchema>;

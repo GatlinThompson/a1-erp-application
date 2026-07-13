@@ -55,8 +55,10 @@ const authController = {
         role: user.role,
       });
 
+      const settings = await userService.getSettings(user.id);
+
       setAuthCookie(res, token);
-      res.status(200).json({ message: "Login successful" });
+      res.status(200).json({ message: "Login successful", settings });
     } catch (error) {
       res.status(500).json({ error: "Internal Server Error" });
     }

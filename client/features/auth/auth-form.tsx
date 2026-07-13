@@ -9,9 +9,11 @@ import { loginSchema, LoginFormValues } from "@/schemas/auth.schema";
 import AuthMessage from "./auth-message";
 import { useRouter } from "next/navigation";
 import { apiFetch } from "@/lib/api";
+import { useSettings } from "@/lib/settings-context";
 
 export default function AuthForm() {
   const router = useRouter();
+  const { setSettings } = useSettings();
   const {
     register,
     handleSubmit,
@@ -37,16 +39,17 @@ export default function AuthForm() {
       .then((result) => {
         if (result.error) {
           setServerError(result.error);
+          setLoading(false);
         } else {
-          console.log(result);
+          setSettings(result.settings ?? {});
           router.push("/dashboard");
         }
       })
       .catch((error) => {
         console.error("Error:", error);
         setServerError("An unexpected error occurred");
-      })
-      .finally(() => setLoading(false));
+        setLoading(false);
+      });
   };
 
   return (
