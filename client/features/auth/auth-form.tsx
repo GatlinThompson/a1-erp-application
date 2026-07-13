@@ -75,7 +75,11 @@ export default function AuthForm() {
         />
 
         <div className="pt-6">
-          <Button type="submit" disabled={loading}>
+          <Button
+            type="submit"
+            disabled={loading}
+            overrideStyle="py-2 px-3 text-lg"
+          >
             {loading ? "Signing In..." : "Sign In"}
           </Button>
         </div>

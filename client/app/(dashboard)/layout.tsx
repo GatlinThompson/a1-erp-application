@@ -1,3 +1,4 @@
+import Header from "@/components/layout/header/header";
 import Nav from "@/components/layout/nav/nav";
 import Link from "next/link";
 
@@ -15,9 +16,7 @@ export default function DashboardLayout({
     <div className="flex flex-1">
       <Nav />
       <div className="flex flex-1 flex-col">
-        <header className="border-b border-black/10 px-6 py-4 dark:border-white/10">
-          <span className="text-sm font-medium">A1 ERP</span>
-        </header>
+        <Header />
         <main className="flex-1 px-6 py-6">{children}</main>
       </div>
     </div>
