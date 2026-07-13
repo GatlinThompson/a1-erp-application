@@ -51,7 +51,7 @@ export default function Nav() {
               className="grid grid-cols-[66px_1fr] items-center rounded py-2 text-sm font-medium whitespace-nowrap"
             >
               <span className="flex justify-center">
-                <span className="flex h-6 w-6 items-center justify-center rounded-full bg-secondary-background text-xs font-semibold uppercase">
+                <span className="flex h-9 w-9 items-center justify-center rounded-full bg-secondary text-lg font-semibold uppercase text-primary">
                   {link.label.charAt(0)}
                 </span>
               </span>
