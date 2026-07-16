@@ -42,7 +42,7 @@ export default function Button({
     <button
       onClick={onClick}
       type={type}
-      className={`${roundedClass} w-full font-bold ${colorClass} ${overrideStyle}`}
+      className={`${roundedClass} w-full font-bold cursor ${colorClass} ${overrideStyle}`}
       disabled={disabled}
     >
       {children}

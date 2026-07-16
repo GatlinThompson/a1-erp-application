@@ -13,6 +13,8 @@ const STORAGE_KEY = "userSettings";
 
 export type UserSettings = {
   navExpanded?: boolean;
+  firstName?: string;
+  lastName?: string;
 } & Record<string, unknown>;
 
 type SettingsContextValue = {
@@ -32,11 +34,7 @@ function readStoredSettings(): UserSettings {
   }
 }
 
-export function SettingsProvider({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export function SettingsProvider({ children }: { children: React.ReactNode }) {
   const [settings, setSettingsState] = useState<UserSettings>({});
 
   useEffect(() => {

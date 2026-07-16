@@ -4,8 +4,14 @@ import { useRouter } from "next/navigation";
 import Button from "@/components/ui/button";
 import { apiFetch } from "@/lib/api";
 import { useSettings } from "@/lib/settings-context";
+import HeaderProfile from "./header-profile";
 
-export default function Header() {
+type HeaderProps = {
+  firstName?: string | null;
+  lastName?: string | null;
+};
+
+export default function Header({ firstName, lastName }: HeaderProps) {
   const router = useRouter();
   const { setSettings } = useSettings();
 
@@ -24,7 +30,8 @@ export default function Header() {
     pb-1.5 flex justify-between items-center"
     >
       <span className="text-sm font-medium flex-1">A1 ERP</span>
-      <div>
+      <div className="flex flex-row gap-5">
+        <HeaderProfile firstName={firstName} lastName={lastName} />
         <Button
           colorScheme="white"
           overrideStyle="py-2 px-3 text-sm flex items-center gap-2"
