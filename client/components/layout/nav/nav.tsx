@@ -35,6 +35,7 @@ export default function Nav() {
               className="h-10 w-10"
               width={40}
               height={40}
+              loading="eager"
             />
           </Link>
           <h1 className="font-medium leading-tight whitespace-nowrap">
