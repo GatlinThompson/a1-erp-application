@@ -15,6 +15,7 @@ export type UserSettings = {
   navExpanded?: boolean;
   firstName?: string;
   lastName?: string;
+  userId?: string;
 } & Record<string, unknown>;
 
 type SettingsContextValue = {
