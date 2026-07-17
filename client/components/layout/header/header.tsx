@@ -5,13 +5,13 @@ import Button from "@/components/ui/button";
 import { apiFetch } from "@/lib/api";
 import { useSettings } from "@/lib/settings-context";
 import HeaderProfile from "./header-profile";
+import type { SessionUser } from "@/lib/auth";
 
 type HeaderProps = {
-  firstName?: string | null;
-  lastName?: string | null;
+  user?: SessionUser | null;
 };
 
-export default function Header({ firstName, lastName }: HeaderProps) {
+export default function Header({ user }: HeaderProps) {
   const router = useRouter();
   const { setSettings } = useSettings();
 
@@ -31,7 +31,11 @@ export default function Header({ firstName, lastName }: HeaderProps) {
     >
       <span className="text-sm font-medium flex-1">A1 ERP</span>
       <div className="flex flex-row gap-5">
-        <HeaderProfile firstName={firstName} lastName={lastName} />
+        <HeaderProfile
+          firstName={user?.firstName ?? null}
+          lastName={user?.lastName ?? null}
+          userId={user?.userId ?? null}
+        />
         <Button
           colorScheme="white"
           overrideStyle="py-2 px-3 text-sm flex items-center gap-2"

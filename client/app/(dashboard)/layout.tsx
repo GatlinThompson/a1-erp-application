@@ -19,7 +19,7 @@ export default async function DashboardLayout({
     <div className="flex flex-1">
       <Nav />
       <div className="flex flex-1 flex-col">
-        <Header firstName={user?.firstName} lastName={user?.lastName} />
+        <Header user={user} />
         <main className="flex-1 px-6 py-6">{children}</main>
       </div>
     </div>
