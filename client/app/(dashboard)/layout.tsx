@@ -1,4 +1,4 @@
-import DashboardShell from "@/components/layout/dashboard-shell";
+import LayoutShell from "@/components/layout/layout-shell";
 import { getSessionUser } from "@/lib/auth";
 
 export default async function DashboardLayout({
@@ -8,5 +8,5 @@ export default async function DashboardLayout({
 }>) {
   const user = await getSessionUser();
 
-  return <DashboardShell user={user}>{children}</DashboardShell>;
+  return <LayoutShell user={user}>{children}</LayoutShell>;
 }
