@@ -38,6 +38,9 @@ export const authenticate = async (
     userId: user.id,
     username: user.username ?? null,
     role: user.role,
+    firstName: user.firstName ?? null,
+    lastName: user.lastName ?? null,
+    email: user.email ?? null,
   };
   next();
 };

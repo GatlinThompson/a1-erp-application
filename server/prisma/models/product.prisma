@@ -2,6 +2,7 @@ enum ProductType {
   HARDWARE
   PART
   KIT
+  SUB_PART
   SHIPPING_KIT
   MATERIAL
   HARDWARE_KIT

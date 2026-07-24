@@ -2,6 +2,7 @@ import express, { type Express, type Request, type Response } from "express";
 import productRouter from "./product.routes.ts";
 import authRouter from "./auth.routes.ts";
 import userRouter from "./user.routes.ts";
+import searchRouter from "./search.routes.ts";
 
 const router = express.Router();
 
@@ -21,5 +22,8 @@ router.use("/auth", authRouter);
 
 //------- User Routes -------------------------------------------
 router.use("/users", userRouter);
+
+//Search Routes
+router.use("/search", searchRouter);
 
 export default router;

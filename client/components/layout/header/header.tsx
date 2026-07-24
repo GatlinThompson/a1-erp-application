@@ -2,6 +2,7 @@ import HeaderProfile from "./header-profile";
 import type { SessionUser } from "@/lib/auth";
 import LogoutButton from "./header-logout";
 import HeaderPageTitle from "./header-page-title";
+import HeaderSearch from "./header-search";
 
 type HeaderProps = {
   user?: SessionUser | null;
@@ -18,6 +19,7 @@ export default function Header({ user, onOpenMobileNav }: HeaderProps) {
         <HeaderPageTitle />
       </span>
       <div className="flex flex-row items-center gap-5">
+        <HeaderSearch />
         <HeaderProfile
           firstName={user?.firstName ?? null}
           lastName={user?.lastName ?? null}
