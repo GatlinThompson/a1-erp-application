@@ -25,14 +25,14 @@ export default function HeaderSearchResults({
 
 export const ProductResult = ({ result }: { result: any }) => {
   return (
-    <li className="flex flex-col p-2 border-b border-gray-300">
+    <li className="flex flex-col p-2 border-b border-gray-300 hover:bg-gray-200 transition-colors duration-200">
       <Link
-        className="font-bold flex flex-col gap-0.5 hover:text-secondary transition-colors duration-200 text-primary"
+        className="font-bold flex flex-col gap-0.5 hover:text-secondary transition-colors duration-200 text-primary text-sm"
         href={`/products/${result.sku}`}
       >
-        <span className="">{result.sku}</span>
+        <span>{result.sku}</span>
         {result.name && (
-          <span className="flex-1 text-sm font-normal  text-gray-500 truncate -mt-1.5">
+          <span className="flex-1 text-xs font-normal  text-gray-500 truncate -mt-1.5">
             {result.name}
           </span>
         )}

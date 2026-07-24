@@ -27,13 +27,6 @@ const searchService = {
             },
           },
         ],
-        AND: [
-          {
-            type: {
-              notIn: ["SUB_PART"],
-            },
-          },
-        ],
       },
       orderBy: [{ type: "desc" }, { sku: "asc" }],
       take: 10,
